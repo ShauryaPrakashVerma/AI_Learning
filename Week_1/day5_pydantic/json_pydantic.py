@@ -6,7 +6,6 @@ from pydantic import BaseModel
 
 load_dotenv()
 
-# ================================================================================================
 class Ticket(BaseModel):
     name: str
     email : str
@@ -17,8 +16,6 @@ schema = Ticket.model_json_schema()
 response_format={
     "type" : "json_object"
 }
-
-# ================================================================================================
 
 system_prompt = f'''
 Extract the personal information, issue from the ticket strictly based on the schema in json format.
@@ -31,8 +28,6 @@ message_system = {
 }
 
 
-
-
 my_api_key = os.getenv("GROQ_API_KEY")
 
 if not my_api_key:
@@ -43,7 +38,6 @@ client = Groq(api_key=my_api_key)
 model = "llama-3.3-70b-versatile"
 
 
-# ================================================================================================
 role = "user"
 text = "My name is Shaurya. I have purchased an IPhone 17 ans the issue is that it has stopped working. My address is lucknow and my email is xyz@gmail.com. My contact number is +91 9999999999"
 
@@ -58,22 +52,12 @@ message={
 }
 
 
-# ================================================================================================
-
-
-
-
-
-
 messages =[message_system, message]
 response = client.chat.completions.create(model = model, messages = messages, response_format=response_format)
 
 answer = response.choices[0].message.content
 
 print(answer)
-
-
-
 
 
 # how to read this
