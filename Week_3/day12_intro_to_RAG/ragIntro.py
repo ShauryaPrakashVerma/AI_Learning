@@ -57,6 +57,7 @@ def ask_llm(question):
     
 # question = "What is Age?" -----> This is a problematic question for this rigid ancient RAG
 # question = "How old is Shaurya"  --------->  also a problematic question
+# question = "What is Agge?"     ------>  does strict matching
 question = "What is Age?"
 
 
