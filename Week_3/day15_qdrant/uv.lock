@@ -147,6 +147,7 @@ dependencies = [
     { name = "dotenv" },
     { name = "groq" },
     { name = "numpy" },
+    { name = "python-dotenv" },
     { name = "qdrant-client" },
     { name = "sentence-transformers" },
 ]
@@ -156,6 +157,7 @@ requires-dist = [
     { name = "dotenv", specifier = ">=0.9.9" },
     { name = "groq", specifier = ">=1.6.0" },
     { name = "numpy", specifier = ">=2.5.2" },
+    { name = "python-dotenv", specifier = ">=1.2.3" },
     { name = "qdrant-client", specifier = ">=1.19.0" },
     { name = "sentence-transformers", specifier = ">=6.0.0" },
 ]
