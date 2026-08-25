@@ -6,10 +6,10 @@ import os
 
 from dotenv import load_dotenv
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams, PointStruct, Filter, FieldCondition, MatchValue, MatchAny, PayloadSchemaType
+from qdrant_client.models import Distance, VectorParams, PointStruct
 from sentence_transformers import SentenceTransformer
 from groq import Groq
-import json
+
 
 # Load variables from .env
 load_dotenv()
@@ -35,7 +35,7 @@ print("Connected to Qdrant Cloud!")
 # PART 3 — CREATE QDRANT COLLECTION
 # ============================================================
 
-COLLECTION_NAME = "knowledge_filter"
+COLLECTION_NAME = "knowledge"
 EMBEDDING_SIZE = 384
 
 
@@ -57,19 +57,20 @@ client.create_collection(
 print(f"Created collection: {COLLECTION_NAME}")
 print(f"Vector size: {EMBEDDING_SIZE}")
 print("Distance: COSINE")
-client.create_payload_index(
-    collection_name=COLLECTION_NAME,
-    field_name="category",
-    field_schema=PayloadSchemaType.KEYWORD,
-)
 
 
 # ============================================================
 # PART 4 — LOAD OUR KNOWLEDGE
 # ============================================================
 
-with open("knowledge.json", "r", encoding="utf-8") as f:
-    documents = json.load(f)
+with open("knowledge.txt", "r", encoding="utf-8") as f:
+    documents = [
+        line.strip()
+        for line in f
+        if line.strip()
+    ]
+# ["line 1 ", "line2", "line3"....]
+print(f"Loaded {len(documents)} documents")
 
 
 # ============================================================
@@ -81,10 +82,9 @@ print("Loading embedding model...")
 model = SentenceTransformer("all-MiniLM-L6-v2") #384
 
 print("Embedding model ready!")
-texts = [document["text"] for document in documents]
 
 
-embeddings = model.encode(texts)
+embeddings = model.encode(documents)
 
 print(f"Generated {len(embeddings)} embeddings")
 print(f"Embedding size: {len(embeddings[0])}")
@@ -96,12 +96,16 @@ print(f"Embedding size: {len(embeddings[0])}")
 
 points = []
 
-for i in range(len(documents)):
-    
+for i, embedding in enumerate(embeddings):
+
     point = PointStruct(
-        id=i + 1,
-        vector=embeddings[i].tolist(),
-        payload=documents[i]
+        id=i + 1, #id=1
+
+        vector=embedding.tolist(),
+
+        payload={
+            "text": documents[i]
+        }
     )
 
     points.append(point)
@@ -138,31 +142,6 @@ def search(query, top_k=3):
 
     return results
 
-def search_with_filter(query, query_filter=None, top_k=3):
-
-
-    query_vector = model.encode(query).tolist()
-
-
-    results = client.query_points(
-        collection_name=COLLECTION_NAME,
-        query=query_vector,
-        limit=top_k,
-        with_payload=True,
-        query_filter=query_filter,
-    ).points
-
-
-    return results
-
-reimbursement_filter = Filter(
-    must=[
-        FieldCondition(
-            key="category",
-            match=MatchValue(value="reimbursement")
-        )
-    ]
-)
 
 # ============================================================
 # PART 9 — TEST SEARCH
@@ -170,7 +149,7 @@ reimbursement_filter = Filter(
 
 query = "How many vacation days do I get?"
 
-results = search_with_filter(query, reimbursement_filter,top_k=3)
+results = search(query, top_k=3)
 
 print("\nSearch results:")
 
@@ -209,7 +188,7 @@ If the answer is not present in the context, say:
 """
 
     response = groq_client.chat.completions.create(
-        model="openai/gpt-oss-120b",
+        model="llama-3.3-70b-versatile",
         messages=[
             {
                 "role": "user",
