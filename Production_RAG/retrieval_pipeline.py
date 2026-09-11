@@ -20,13 +20,13 @@ query = "How much did Microsoft pay to acquire GitHub?"
 
 retriever = db.as_retriever(search_kwargs={"k": 5})
 
-# retriever = db.as_retriever(
-#     search_type="similarity_score_threshold",
-#     search_kwargs={
-#         "k": 5,
-#         "score_threshold": 0.3  # Only return chunks with cosine similarity ≥ 0.3
-#     }
-# )
+retriever = db.as_retriever(
+    search_type="similarity_score_threshold",
+    search_kwargs={
+        "k": 5,
+        "score_threshold": 0.3  # Only return chunks with cosine similarity ≥ 0.3
+    }
+)
 
 relevant_docs = retriever.invoke(query)
 
